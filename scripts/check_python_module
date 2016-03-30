@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+#
+# Check if a compatible version of a python module is installed
+#
+# usage: check_python_module <module> <min_version>
+#
+
+from __future__ import print_function
+import sys
+import importlib
+import argparse
+
+parser = argparse.ArgumentParser(description="Check presence and version of a Python module")
+parser.add_argument("module", help="python module to check")
+parser.add_argument("min_version", help="minimum version")
+parser.add_argument("-v", "--verbose", action="store_true")
+args = parser.parse_args()
+
+modname = args.module
+version = args.min_version
+
+#
+# See if scipy is installed in the first place
+#
+try:
+    module = importlib.import_module(modname)
+except ImportError:
+    print("error: %(module)s is not installed."
+          " Please install %(module)s v%(needver)s or later and try again." % {
+              'module': modname,
+              'needver': version
+          },
+          file=sys.stderr)
+    exit(-1)
+
+#
+# Check version compatibility
+#
+needver = list(map(int, version.split('.')))
+havever = list(map(int, module.__version__.split('.'))) + [0] * len(needver)
+for a, b in zip(needver, havever):
+    if a > b:
+        print("error: %(module)s version too old (v%(havever)s)."
+              " Please install %(module)s v%(needver)s or later and try again." % {
+                  'module': modname,
+                  'havever': module.__version__,
+                  'needver': version
+              },
+              file=sys.stderr)
+        exit(-1)
+    elif a < b:
+        break
+
+if args.verbose:
+    print("Using externally provided %s v%s." % (modname, module.__version__))
+
+# OK.
+exit(0)
