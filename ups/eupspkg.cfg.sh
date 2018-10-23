@@ -1,5 +1,5 @@
 _MODULE="scipy"
-_VERSION="0.16.1"
+_VERSION="1.1.0"
 
 config()
 {
